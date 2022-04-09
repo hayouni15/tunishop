@@ -3,11 +3,12 @@ import { Container, Typography, Button, Grid } from '@material-ui/core'
 import useStyle from './styles'
 import CartItem from './CartItem/CartItem'
 import { Link } from 'react-router-dom'
+import LoadingCircle from '../LoadingCircle/LoadingCircle'
 
 const Cart = ({ cart, onUpdateCartQty, onAddToCart, onRemovefromCart, onEmptyCart, setPage }) => {
     setPage(1)
     const classes = useStyle()
-    if (!cart.line_items) return 'Loading'
+    if (!cart.line_items) return (<LoadingCircle></LoadingCircle>)
 
     const EmptyCart = () => {
         return (<Typography variant='subtitle1'> Your Cart is Empty</Typography>)

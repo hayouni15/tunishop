@@ -9,8 +9,11 @@ export default makeStyles((theme) => ({
         textAlign: "center"
     },
     slideImage: {
-        width: "100%",
-        maxWidth: "800px",
-        height: "auto"
+
+        maxWidth: "900px",
+        maxHeight: "470px",
+        hight: "400px",
+        width: "100%"
+
     }
 }))

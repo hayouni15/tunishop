@@ -10,18 +10,19 @@ const Navbar = ({ cart }) => {
     const location = useLocation();
     return (
         <div>
-            <AppBar position="fixed" className={classes.appBar} color="inherit">
+            <AppBar position="static" className={classes.appBar} color="inherit">
                 <Toolbar>
                     <Typography component={Link} to="/" variant="h6" className={classes.title} color="inherit">
                         <img src={logo} alt="my ecommerce" className={classes.image} />
                     </Typography>
                     <div className="classes.grow"></div>
-                    {location.pathname === "/" && (
+                    {location.pathname !== "/cart" && (
                         <div className="classes.button">
                             <IconButton component={Link} to="/cart" arial-label="show cart" color="inherit">
                                 <Badge badgeContent={cart.total_items} color="secondary">
                                     <ShoppingCart></ShoppingCart>
-                                </Badge></IconButton>
+                                </Badge>
+                            </IconButton>
 
                         </div>)}
 
