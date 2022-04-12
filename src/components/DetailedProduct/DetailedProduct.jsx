@@ -14,6 +14,8 @@ import Avatar from '@mui/material/Avatar';
 import { Link } from 'react-router-dom'
 import LoadingCircle from '../LoadingCircle/LoadingCircle';
 import SendIcon from '@mui/icons-material/Send';
+import { Rating } from '@mui/material';
+
 
 const RelatedProductTemplate = (relatedProduct) => {
     return (
@@ -26,24 +28,34 @@ const RelatedProductTemplate = (relatedProduct) => {
         />
     )
 }
-const DetailedProduct = ({ products, searchProducts, setCategory, setPage, setPagesCount, handleAddToCart }) => {
+
+const DetailedProduct = ({ products, searchProducts, handleAddToCart, ratings, fetchRatings }) => {
+    let ratingsAverage = 0
     let classes = useStyles()
     let { ProductId } = useParams();
-    console.log(ProductId)
-    console.log(products)
-    const product = products.find(({ id }) => id === ProductId);
-    console.log(product)
+    const product = products.find(({ _id }) => _id === ProductId);
+
+    ratings ? console.log(ratings) : console.log("loding ratings")
+
+    useEffect(() => {
+        console.log('here')
+        product && fetchRatings({ "productID": product._id })
+    }, [product])
+
     if (!product) {
-        searchProducts(ProductId)
-        setCategory('')
-        setPagesCount(1)
+        searchProducts({ "query": { _id: { "value": ProductId, "isExact": true } } })
         return (
             <LoadingCircle></LoadingCircle>
         )
-    }
-    else {
-        console.log('fetched already')
+    } else {
+        if (ratings) {
 
+            console.log(ratings)
+            ratings.map((rating) => {
+                ratingsAverage += rating.rating
+            })
+            ratingsAverage = ratingsAverage / ratings.length
+        }
     }
 
     return (
@@ -55,13 +67,13 @@ const DetailedProduct = ({ products, searchProducts, setCategory, setPage, setPa
                     <Card className={classes.slide} >
                         <div className="slide-container">
                             <Fade>
-                                {product.assets.map((asset) => (
-                                    <div key={asset.id} className="each-fade">
-                                        <img className={classes.slideImage} src={asset.url} alt="imagee" />
+                                {product.images.map((imageUrl, index) => (
+                                    <div key={index} className="each-fade">
+                                        <img className={classes.slideImage} src={imageUrl} alt="imagee" />
                                     </div>
                                 ))}
                                 <div key={product.id} className="each-fade">
-                                    <img className={classes.slideImage} src={product.image.url} alt="imagee" />
+                                    <img className={classes.slideImage} src={product.images[0]} alt="imagee" />
                                 </div>
                             </Fade>
                         </div>
@@ -70,14 +82,31 @@ const DetailedProduct = ({ products, searchProducts, setCategory, setPage, setPa
                         <Box sx={{ width: '100%', maxWidth: 900, bgcolor: 'background.paper' }}>
                             <Box sx={{ my: 3, mx: 2 }}>
                                 <Grid container alignItems="center">
-                                    <Grid item xs={9}>
+                                    <Grid item xs={10}>
                                         <Typography gutterBottom variant="h6" style={{ fontWeight: 'bold', width: 'max-content' }} component="div">
-                                            {product.name}
+                                            {product.title}
                                         </Typography>
+
+                                        <Box
+                                            sx={{
+                                                width: 200,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                            }}
+                                        >
+                                            <Rating
+                                                name="text-feedback"
+                                                value={ratingsAverage}
+                                                readOnly
+                                                precision={0.5}
+
+                                            />
+                                            <Box sx={{ ml: 2 }}>{`(${ratings.length})`}</Box>
+                                        </Box>
                                     </Grid>
                                     <Grid item>
                                         <Typography style={{ color: '#6bc36b', fontWeight: 'bold' }} gutterBottom variant="h6" component="div">
-                                            {product.price.formatted} DT
+                                            {product.price} DT
                                         </Typography>
                                     </Grid>
                                 </Grid>
@@ -85,7 +114,7 @@ const DetailedProduct = ({ products, searchProducts, setCategory, setPage, setPa
                                     Description:
                                 </Typography>
 
-                                <Typography style={{ paddingLeft: '34px' }} dangerouslySetInnerHTML={{ __html: product.description }} color="textSecondary" variant="body2"></Typography>
+                                <Typography style={{ paddingLeft: '34px' }} dangerouslySetInnerHTML={{ __html: product.desc }} color="textSecondary" variant="body2"></Typography>
                             </Box>
                             <Divider variant="middle" />
                             <Box sx={{ m: 2 }}>
@@ -93,7 +122,7 @@ const DetailedProduct = ({ products, searchProducts, setCategory, setPage, setPa
                                     Similar products
                                 </Typography>
                                 <Stack direction="row" spacing={1} style={{ display: 'block' }}>
-                                    {product.related_products.map((prod) => (
+                                    {product.relatedProducts.map((prod) => (
                                         <RelatedProductTemplate key={prod.id} product={prod}></RelatedProductTemplate>
                                     ))}
                                 </Stack>
@@ -102,10 +131,10 @@ const DetailedProduct = ({ products, searchProducts, setCategory, setPage, setPa
                                 <Button variant="outlined" endIcon={<SendIcon />}>
                                     Nous contacter
                                 </Button>
-                                <IconButton arial-label="add to cart" onClick={() => handleAddToCart(product.id, 1)}>
+                                <IconButton arial-label="add to cart" onClick={() => handleAddToCart(product._id, 1)}>
                                     <AddShoppingCart></AddShoppingCart>
                                 </IconButton>
-                                <IconButton arial-label="add to cart" onClick={() => handleAddToCart(product.id, 1)}>
+                                <IconButton arial-label="add to cart" onClick={() => handleAddToCart(product._id, 1)}>
                                     <SendIcon></SendIcon>
                                 </IconButton>
                             </Box>

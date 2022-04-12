@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import Products from './components/Products/Products'
 import Navbar from './components/Navbar/Navbar'
 import Cart from './components/Cart/Cart'
@@ -7,10 +7,8 @@ import DetailedProduct from "./components/DetailedProduct/DetailedProduct";
 import { commerce } from './lib/commerce'
 import Categories from './components/Categories/Categories'
 import Snackbar from '@mui/material/Snackbar';
-import IconButton from '@mui/material/IconButton';
-import Button from '@mui/material/Button';
-import CloseIcon from '@mui/icons-material/Close';
 import Footer from "./components/Footer/Footer";
+import axios from "axios"
 
 
 
@@ -29,54 +27,91 @@ let App = () => {
     const [category, setCategory] = useState('all')
     const [searchSnackBar, setSearchSnackBar] = useState(false);
     const [paginationVisibility, setPaginationVisibility] = useState(true)
+    const [ratings, setRatings] = useState([])
 
-    const fetchProducts = (page, category) => {
-        commerce.products.list({
-            limit,
-            page,
-            category_slug: category === 'all' ? [] : [category],
-        }).then((products) => {
-            setProducts(products.data);
-            console.log('products fetched')
-        }).catch((error) => {
-            console.log('There was an error fetching the products', error)
-        });
+
+    const fetchProductsFromAPI = (category) => {
+        let query = (category === 'all') ? {} : { "query": { "category": { "value": category, "isExact": true } } }
+        axios({
+            method: 'post',
+            url: `http://localhost:5000/api/products/fetch?limit=${limit}&page=${page - 1}`,
+            headers: {},
+            data: query
+        })
+            .then(function (response) {
+                // handle success
+                setPagesCount(Math.ceil(response.data.count / limit))
+                setProducts(response.data.products);
+            })
+            .catch(function (error) {
+                // handle error
+                console.log(error);
+            })
+    }
+
+    const searchProducts = (query) => {
+        axios({
+            method: 'post',
+            url: `http://localhost:5000/api/products/fetch`,
+            headers: {},
+            data: query
+        })
+            .then(function (response) {
+                // handle success
+                setPagesCount(Math.ceil(response.data.count / limit))
+                setProducts(response.data.products);
+
+                if (response.data.count > 0) {
+                    setProducts(response.data.products);
+                }
+                else {
+                    console.log('cant find any items')
+                    setSearchSnackBar(true)
+                }
+            })
+            .catch(function (error) {
+                // handle error
+                console.log('There was an error fetching the products', error)
+            })
     }
 
     const fetchCategory = () => {
         let AllCategories = []
-        commerce.categories.list().then((allCategories) => {
-            allCategories.data.map((category) => (
-                AllCategories.push(category.name)
-            ))
-            setCategories(AllCategories)
-        }).catch((error) => {
-            console.log('There was an error fetching the products', error)
-        });
+        axios({
+            method: 'get',
+            url: `http://localhost:5000/api/categories/fetch`,
+            headers: {},
+        })
+            .then(function (response) {
+                // handle success
+                response.data.map((category) => (
+                    AllCategories.push(category.category)
+                ))
+                setCategories(AllCategories);
+            })
+            .catch(function (error) {
+                // handle error
+                console.log(error);
+            })
     }
 
-    const searchProducts = (query) => {
-        commerce.products.list({
-            query,
-        }).then((prods) => {
-            if (prods.data) {
-                setProducts(prods.data);
-                console.log(prods)
-            }
-            else {
-                console.log('cant find any items')
-                setSearchSnackBar(true)
-            }
-        }).catch((error) => {
-            console.log('There was an error fetching the products', error)
-        });
+    const fetchRatings = (query) => {
+        axios({
+            method: 'post',
+            url: `http://localhost:5000/api/ratings/fetch`,
+            headers: {},
+            data: query
+        })
+            .then(function (response) {
+                console.log(response)
+                // handle success
+                setRatings(response.data);
+            })
+            .catch(function (error) {
+                // handle error
+                console.log('There was an error fetching the products', error)
+            })
     }
-
-    const getPagesNumber =
-        async (category) => {
-            const allProducts = await commerce.products.list({ category_slug: category === 'all' ? [] : [category] })
-            setPagesCount(Math.ceil(allProducts.data.length / limit))
-        }
 
 
     const fetchCart = async () => {
@@ -113,17 +148,16 @@ let App = () => {
     };
 
     useEffect(() => {
-        getPagesNumber(category)
         setPage(1)
-        console.log('here')
+        console.log('here1')
     }, [category]
     )
 
     useEffect(() => {
+        console.log('here2')
         fetchCategory();
         fetchCart()
-        console.log('here2')
-        fetchProducts(page, category);
+        fetchProductsFromAPI(category);
     }, [page, pagesCount, category])
 
 
@@ -179,10 +213,9 @@ let App = () => {
                         <DetailedProduct
                             searchProducts={searchProducts}
                             products={products}
-                            setCategory={setCategory}
-                            setPage={setPage}
-                            setPagesCount={setPagesCount}
                             handleAddToCart={handleAddToCart}
+                            ratings={ratings}
+                            fetchRatings={fetchRatings}
                         ></DetailedProduct>} />
                 </Routes>
                 <Footer></Footer>

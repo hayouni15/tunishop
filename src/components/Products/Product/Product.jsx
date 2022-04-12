@@ -10,7 +10,7 @@ import { Button } from '@mui/material'
 
 const Product = ({ product, onAddtoCart, setCategory, setPage, setPaginationVisibility }) => {
     const classes = useStyles();
-    let link = `/productDetails/${product.id}`
+    let link = `/productDetails/${product._id}`
     const handleCategoryButtonClick = (e) => {
         setCategory(e.target.textContent);
         setPage(1)
@@ -18,18 +18,18 @@ const Product = ({ product, onAddtoCart, setCategory, setPage, setPaginationVisi
     }
     return (
         <Card className={classes.root}>
-            <CardMedia component={Link} to={link} className={classes.media} image={product.image?.url} title={product.name}></CardMedia>
+            <CardMedia component={Link} to={link} className={classes.media} image={product.images[0]} title={product.name}></CardMedia>
             <CardContent style={{ paddingBottom: '0px' }}>
                 <div className={classes.cardContent} >
                     <Grid container alignItems="center">
                         <Grid item xs>
                             <Typography gutterBottom>
-                                {product.name}
+                                {product.title}
                             </Typography>
                         </Grid>
                         <Grid item>
                             <Typography style={{ color: 'rgb(129 157 129)' }} gutterBottom>
-                                {product.price.formatted} DT
+                                {product.price} DT
                             </Typography>
                         </Grid>
                     </Grid>
@@ -39,9 +39,7 @@ const Product = ({ product, onAddtoCart, setCategory, setPage, setPaginationVisi
                         <Typography variant="body2" style={{ marginRight: "10px" }} color='textSecondary' gutterBottom>
                             Categories:
                         </Typography>
-                        {product.categories.map((gategory) => ((
-                            <Chip onClick={handleCategoryButtonClick} size="small" style={{ cursor: "pointer" }} key={gategory.name} label={gategory.name} variant="outlined"></Chip>
-                        )))}
+                        <Chip onClick={handleCategoryButtonClick} size="small" style={{ cursor: "pointer" }} key={product.category} label={product.category} variant="outlined"></Chip>
                     </Grid>
                     <Divider variant="middle" />
 
@@ -49,19 +47,19 @@ const Product = ({ product, onAddtoCart, setCategory, setPage, setPaginationVisi
                     <Grid container alignItems="center">
                         <Grid item >
                             <CardActions disableSpacing className={classes.carActions}>
-                                <IconButton arial-label="add to cart" onClick={() => onAddtoCart(product.id, 1)}>
+                                <IconButton arial-label="add to cart" onClick={() => onAddtoCart(product._id, 1)}>
                                     <AddShoppingCart></AddShoppingCart>
                                 </IconButton>
                             </CardActions>
                         </Grid>
                         <Grid item xs>
-                            {product.inventory.managed && product.inventory.available < 10 && product.inventory.available > 0 && (
+                            {product.inventory < 10 && product.inventory > 0 && (
                                 <Alert style={{ width: 'fit-content', background: 'none', float: 'right' }} severity="warning">Low Stock({product.inventory.available})</Alert>
                             )}
-                            {product.inventory.managed && product.inventory.available === 0 && (
+                            {product.inventory === 0 && (
                                 <Alert style={{ width: 'fit-content', background: 'none', float: 'right' }} severity="error">Out of Stock</Alert>
                             )}
-                            {((product.inventory.managed && product.inventory.available >= 10) || !product.inventory.managed) && (
+                            {(product.inventory >= 10) && (
                                 <Alert style={{ width: 'fit-content', background: 'none', float: 'right' }} severity="success">In Stock</Alert>
                             )}
                         </Grid>

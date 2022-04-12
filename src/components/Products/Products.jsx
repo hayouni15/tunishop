@@ -17,7 +17,7 @@ const Products = ({ products, onAddtoCart, page, setPage, pagesCount, pagination
 
             <Grid container justifyContent='center' spacing={4}>
                 {products.map((product) => (
-                    <Grid item key={product.id} xs={12} sm={12} md={4} lg={3}>
+                    <Grid item key={product._id} xs={12} sm={12} md={4} lg={3}>
                         <Product
                             product={product}
                             onAddtoCart={onAddtoCart}

@@ -9,15 +9,16 @@ import Divider from '@mui/material/Divider';
 const SearchBar = ({ searchProducts, setCategory, setPaginationVisibility }) => {
     const handleOnSearch = () => {
         let v = document.getElementById("searchInput").value
-        searchProducts(v)
-        setCategory('')
+        console.log(v)
+        searchProducts({ "query": { title: { "value": v, "isExact": false } } })
+        //setCategory('')
         setPaginationVisibility(false)
 
     }
     const handleKeyPress = (e) => {
         if (e.key === 'Enter') {
             handleOnSearch()
-            setCategory('')
+            //setCategory('')
             setPaginationVisibility(false)
         }
     }
