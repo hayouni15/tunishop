@@ -18,7 +18,7 @@ import { Alert } from "@mui/material";
 
 let App = () => {
     const [products, setProducts] = useState([])
-    const [productByID, setProductByID] = useState()
+    const [searchTerm, setSearchTerm] = useState("")
     const [cart, setCart] = useState({})
     const [page, setPage] = useState(1)
     const [pagesCount, setPagesCount] = useState(0)
@@ -28,10 +28,72 @@ let App = () => {
     const [searchSnackBar, setSearchSnackBar] = useState(false);
     const [paginationVisibility, setPaginationVisibility] = useState(true)
     const [ratings, setRatings] = useState([])
+    const [features, setFeatures] = useState([])
+    const [sortBy, setSortBy] = useState("Newest first");
+    const [productsCount, setProductsCount] = useState(0);
+    const [signUpInfo, setSignUpInfo] = useState({ status: undefined })
+    const [sessionInfo, setSessionInfo] = useState({ status: undefined })
+    // headers:{ 'x-access-token':localStorage.getItem('token')}
+    const logIn = (credentials) => {
+        axios({
+            method: 'post',
+            url: `http://localhost:5000/api/uauth/login`,
+            headers: {},
+            data: credentials
+        })
+            .then(function (response) {
+                // handle success
+                console.log(response)
+                setSessionInfo({ user: response.data, status: 201 })
+            })
+            .catch(function (Error) {
+                // handle error
+                console.log('There was an error to Sign up', Error.response)
+                setSessionInfo(Error.response)
+            })
+    }
 
+    const signUp = (newUser) => {
+        axios({
+            method: 'post',
+            url: `http://localhost:5000/api/uauth/register`,
+            headers: {},
+            data: newUser
+        })
+            .then(function (response) {
+                // handle success
+                console.log(response)
+                setSignUpInfo({ user: response.data, status: 201 })
+            })
+            .catch(function (Error) {
+                // handle error
+                console.log('There was an error to Sign up', Error.response)
+                setSignUpInfo(Error.response)
+            })
+    }
+    const searchProducts = (query) => {
 
-    const fetchProductsFromAPI = (category) => {
-        let query = (category === 'all') ? {} : { "query": { "category": { "value": category, "isExact": true } } }
+        if (searchTerm) {
+            console.log(searchTerm)
+            query['query'] = { title: { "value": searchTerm, "isExact": false } }
+        }
+
+        switch (sortBy) {
+            case "Newest first":
+                query['sort'] = { "createdAt": 1 }
+                break;
+            case "Price Low to High":
+                query['sort'] = { "price": 1 }
+                break
+            case "Price Hight to Low":
+                query['sort'] = { "price": -1 }
+                break
+            case "Most Sold":
+                query['sort'] = { "orders": 1 }
+                break
+            default:
+                break;
+        }
         axios({
             method: 'post',
             url: `http://localhost:5000/api/products/fetch?limit=${limit}&page=${page - 1}`,
@@ -40,29 +102,10 @@ let App = () => {
         })
             .then(function (response) {
                 // handle success
-                setPagesCount(Math.ceil(response.data.count / limit))
-                setProducts(response.data.products);
-            })
-            .catch(function (error) {
-                // handle error
-                console.log(error);
-            })
-    }
-
-    const searchProducts = (query) => {
-        axios({
-            method: 'post',
-            url: `http://localhost:5000/api/products/fetch`,
-            headers: {},
-            data: query
-        })
-            .then(function (response) {
-                // handle success
-                setPagesCount(Math.ceil(response.data.count / limit))
-                setProducts(response.data.products);
-
                 if (response.data.count > 0) {
+                    setPagesCount(Math.ceil(response.data.count / limit))
                     setProducts(response.data.products);
+                    setProductsCount(response.data.count)
                 }
                 else {
                     console.log('cant find any items')
@@ -113,6 +156,22 @@ let App = () => {
             })
     }
 
+    const fetchFeatures = (id) => {
+        axios({
+            method: 'get',
+            url: `http://localhost:5000/api/features/get/${id.productID}`,
+            headers: {}
+        })
+            .then(function (response) {
+                console.log(response)
+                // handle success
+                setFeatures(response.data);
+            })
+            .catch(function (error) {
+                // handle error
+                console.log('There was an error fetching the features', error)
+            })
+    }
 
     const fetchCart = async () => {
         setCart(await commerce.cart.retrieve())
@@ -149,24 +208,29 @@ let App = () => {
 
     useEffect(() => {
         setPage(1)
-        console.log('here1')
+        document.getElementById('sortMenu').setAttribute('disabled', true)
     }, [category]
     )
 
     useEffect(() => {
-        console.log('here2')
-        fetchCategory();
+        fetchCategory()
         fetchCart()
-        fetchProductsFromAPI(category);
-    }, [page, pagesCount, category])
-
+        let query = (category === 'all' || category === 'refresh') ? {} : { "query": { "category": { "value": category, "isExact": true } } }
+        searchProducts(query)
+        //fetchProductsFromAPI(category)
+    }, [page, category, sortBy, searchTerm, signUpInfo, sessionInfo])
 
 
     return (
         <Router>
-            <div>
+            <div style={{ background: '#f5f5f5' }}>
                 <Navbar
-                    cart={cart}>
+                    cart={cart}
+                    signUp={signUp}
+                    logIn={logIn}
+                    setSessionInfo={setSessionInfo}
+                    sessionInfo={sessionInfo}
+                    signUpInfo={signUpInfo}>
                 </Navbar>
 
                 <Categories
@@ -176,6 +240,7 @@ let App = () => {
                     setPage={setPage}
                     searchProducts={searchProducts}
                     setPaginationVisibility={setPaginationVisibility}
+                    setSearchTerm={setSearchTerm}
                 ></Categories>
 
                 <Snackbar
@@ -198,7 +263,10 @@ let App = () => {
                             pagesCount={pagesCount}
                             paginationVisibility={paginationVisibility}
                             setCategory={setCategory}
-                            setPaginationVisibility={setPaginationVisibility}>
+                            setPaginationVisibility={setPaginationVisibility}
+                            sortBy={sortBy}
+                            setSortBy={setSortBy}
+                            productsCount={productsCount}>
                         </Products>} />
                     <Route exact path="/cart" element={
                         <Cart
@@ -216,6 +284,8 @@ let App = () => {
                             handleAddToCart={handleAddToCart}
                             ratings={ratings}
                             fetchRatings={fetchRatings}
+                            features={features}
+                            fetchFeatures={fetchFeatures}
                         ></DetailedProduct>} />
                 </Routes>
                 <Footer></Footer>

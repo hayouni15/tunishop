@@ -1,4 +1,4 @@
-import { Card, Container, CardActions, CardContent, CardMedia, Grid, IconButton, Typography } from '@material-ui/core';
+import { Card, Container, CardActions, CardContent, CardMedia, Grid, IconButton, Typography, LinearProgress } from '@material-ui/core';
 import { AddShoppingCart } from '@material-ui/icons';
 import React, { useCallback, useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom';
@@ -15,6 +15,9 @@ import { Link } from 'react-router-dom'
 import LoadingCircle from '../LoadingCircle/LoadingCircle';
 import SendIcon from '@mui/icons-material/Send';
 import { Rating } from '@mui/material';
+import StarIcon from '@mui/icons-material/Star';
+import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
+import RatingsPanel from './RatingsPanel'
 
 
 const RelatedProductTemplate = (relatedProduct) => {
@@ -29,17 +32,30 @@ const RelatedProductTemplate = (relatedProduct) => {
     )
 }
 
-const DetailedProduct = ({ products, searchProducts, handleAddToCart, ratings, fetchRatings }) => {
-    let ratingsAverage = 0
+const DetailedProduct = ({ products, searchProducts, handleAddToCart, ratings, fetchRatings, features, fetchFeatures }) => {
     let classes = useStyles()
+    let ratingsAverage = 0
+    let detailedRatings = {
+        total: ratings.count,
+        values: {
+            1: [],
+            2: [],
+            3: [],
+            4: [],
+            5: []
+        }
+    }
+
     let { ProductId } = useParams();
     const product = products.find(({ _id }) => _id === ProductId);
 
     ratings ? console.log(ratings) : console.log("loding ratings")
+    features ? console.log(features) : console.log("loading features")
 
     useEffect(() => {
         console.log('here')
         product && fetchRatings({ "productID": product._id })
+        product && fetchFeatures({ "productID": product._id })
     }, [product])
 
     if (!product) {
@@ -48,9 +64,19 @@ const DetailedProduct = ({ products, searchProducts, handleAddToCart, ratings, f
             <LoadingCircle></LoadingCircle>
         )
     } else {
+
         if (ratings) {
 
-            console.log(ratings)
+            for (let index = 0; index < ratings.length; index++) {
+                if (ratings[index].rating === 1) detailedRatings.values['1'].push(ratings[index])
+                if (ratings[index].rating === 2) detailedRatings.values['2'].push(ratings[index])
+                if (ratings[index].rating === 3) detailedRatings.values['3'].push(ratings[index])
+                if (ratings[index].rating === 4) detailedRatings.values['4'].push(ratings[index])
+                if (ratings[index].rating === 5) detailedRatings.values['5'].push(ratings[index])
+
+            }
+            detailedRatings.total = ratings.length
+            console.log(detailedRatings)
             ratings.map((rating) => {
                 ratingsAverage += rating.rating
             })
@@ -98,10 +124,10 @@ const DetailedProduct = ({ products, searchProducts, handleAddToCart, ratings, f
                                                 name="text-feedback"
                                                 value={ratingsAverage}
                                                 readOnly
+                                                size="small"
                                                 precision={0.5}
-
                                             />
-                                            <Box sx={{ ml: 2 }}>{`(${ratings.length})`}</Box>
+                                            <Box sx={{ ml: 1 }}>{`(${ratings.length})`}</Box>
                                         </Box>
                                     </Grid>
                                     <Grid item>
@@ -110,7 +136,23 @@ const DetailedProduct = ({ products, searchProducts, handleAddToCart, ratings, f
                                         </Typography>
                                     </Grid>
                                 </Grid>
-                                <Typography variant="body1" component="div">
+                                <Box mb={2} mt={2}>
+                                    {features.map((feature) => (
+                                        <Grid key={feature._id} container alignItems="center" >
+                                            <Grid item xs={8} sm={8} md={4} lg={4}>
+                                                <Typography variant="body2" gutterBottom style={{ fontWeight: "bold" }}>
+                                                    {feature.name}
+                                                </Typography>
+                                            </Grid>
+                                            <Grid item xs={4} sm={4} md={8} lg={8}>
+                                                <Typography variant="caption" gutterBottom >
+                                                    {feature.value}
+                                                </Typography>
+                                            </Grid>
+                                        </Grid>
+                                    ))}
+                                </Box>
+                                <Typography variant="body2" component="div" style={{ fontWeight: "bold" }}>
                                     Description:
                                 </Typography>
 
@@ -141,8 +183,11 @@ const DetailedProduct = ({ products, searchProducts, handleAddToCart, ratings, f
                         </Box>
                     </Card>
                 </Grid>
-                <div className={classes.toolbar}></div>
+
             </Container>
+            {ratingsAverage && <RatingsPanel ratings={ratings} detailedRatings={detailedRatings} ratingsAverage={ratingsAverage}>
+            </RatingsPanel>}
+
         </>
 
     )

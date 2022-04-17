@@ -6,14 +6,16 @@ import useStyles from './styles';
 import { useLocation } from "react-router-dom";
 import SearchBar from '../SearchBar/SearchBar';
 import { Slide } from '@mui/material';
+import SyncIcon from '@mui/icons-material/Sync';
 
-const Categories = ({ categories, category, setCategory, setPage, searchProducts, setPaginationVisibility }) => {
+const Categories = ({ categories, category, setCategory, setPage, searchProducts, setPaginationVisibility, setSearchTerm }) => {
     let classes = useStyles()
 
     const handleChange = (event, newValue) => {
         setCategory(newValue);
         setPage(1)
         setPaginationVisibility(true)
+        setSearchTerm("")
     };
     const location = useLocation()
     return (
@@ -28,11 +30,12 @@ const Categories = ({ categories, category, setCategory, setPage, searchProducts
                         allowScrollButtonsMobile
                         aria-label="scrollable force tabs example"
                     >
+                        <Tab icon={<SyncIcon />} value="refresh" />
                         <Tab label="All products" value="all" />
                         {categories.map((item) => (
                             <Tab label={item} key={item} value={item} />
                         ))}
-                        <SearchBar searchProducts={searchProducts} setCategory={setCategory} setPaginationVisibility={setPaginationVisibility}></SearchBar>
+                        <SearchBar searchProducts={searchProducts} setCategory={setCategory} setPaginationVisibility={setPaginationVisibility} setSearchTerm={setSearchTerm}></SearchBar>
                     </Tabs>
 
                 </Box>}

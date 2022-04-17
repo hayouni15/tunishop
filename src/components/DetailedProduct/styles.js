@@ -14,6 +14,11 @@ export default makeStyles((theme) => ({
         maxHeight: "470px",
         hight: "400px",
         width: "100%"
-
+    },
+    colorPrimary: {
+        backgroundColor: '#d5c9c9 !important',
+    },
+    barColorPrimary: {
+        backgroundColor: '#faaf00 !important'
     }
 }))

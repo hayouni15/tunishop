@@ -6,20 +6,15 @@ import SearchIcon from '@mui/icons-material/Search';
 import Divider from '@mui/material/Divider';
 
 
-const SearchBar = ({ searchProducts, setCategory, setPaginationVisibility }) => {
+const SearchBar = ({ searchProducts, setCategory, setPaginationVisibility, setSearchTerm }) => {
     const handleOnSearch = () => {
         let v = document.getElementById("searchInput").value
-        console.log(v)
-        searchProducts({ "query": { title: { "value": v, "isExact": false } } })
-        //setCategory('')
-        setPaginationVisibility(false)
-
+        setSearchTerm(v)
+        setCategory("refresh")
     }
     const handleKeyPress = (e) => {
         if (e.key === 'Enter') {
             handleOnSearch()
-            //setCategory('')
-            setPaginationVisibility(false)
         }
     }
     return (

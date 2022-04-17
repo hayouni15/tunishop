@@ -7,6 +7,7 @@ import LoadingCircle from '../LoadingCircle/LoadingCircle'
 
 const Cart = ({ cart, onUpdateCartQty, onAddToCart, onRemovefromCart, onEmptyCart, setPage }) => {
     setPage(1)
+    console.log(cart)
     const classes = useStyle()
     if (!cart.line_items) return (<LoadingCircle></LoadingCircle>)
 

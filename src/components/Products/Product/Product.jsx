@@ -54,7 +54,7 @@ const Product = ({ product, onAddtoCart, setCategory, setPage, setPaginationVisi
                         </Grid>
                         <Grid item xs>
                             {product.inventory < 10 && product.inventory > 0 && (
-                                <Alert style={{ width: 'fit-content', background: 'none', float: 'right' }} severity="warning">Low Stock({product.inventory.available})</Alert>
+                                <Alert style={{ width: 'fit-content', background: 'none', float: 'right' }} severity="warning">Low Stock({product.inventory})</Alert>
                             )}
                             {product.inventory === 0 && (
                                 <Alert style={{ width: 'fit-content', background: 'none', float: 'right' }} severity="error">Out of Stock</Alert>
